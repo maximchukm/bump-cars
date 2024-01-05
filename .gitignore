@@ -1,0 +1,5 @@
+.nova
+.idea
+.DS_Store
+cmake-build-*
+*.pdx
