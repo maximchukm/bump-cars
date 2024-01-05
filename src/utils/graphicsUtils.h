@@ -12,4 +12,6 @@ LCDSprite *createSprite(PlaydateAPI *pd, Visual *visual);
 
 LCDBitmap *createBitmap(PlaydateAPI *pd, const char* imagePath);
 
+LCDBitmapTable *loadBitmapTable(PlaydateAPI *pd, const char* path);
+
 #endif //BUMP_CARS_GRAPHICSUTILS_H

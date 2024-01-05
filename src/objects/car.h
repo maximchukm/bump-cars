@@ -9,7 +9,10 @@
 
 typedef struct {
     const struct visual *visual;
-    float angle;
+    float maxSpeed;
+    float acceleration;
+    float speed;
+    int angle;
 } Car;
 
 struct carFunctions {

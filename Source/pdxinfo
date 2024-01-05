@@ -1,5 +1,5 @@
-name=Hello World C
-author=Dave Hayden
-description=A small demo of the C API
-bundleID=com.panic.hellocapi
+name=Bump Cars
+author=Maksym Maksymchuk
+description=Simple car bumping game
+bundleID=com.maksymchuk.playdate
 imagePath=

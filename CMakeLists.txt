@@ -34,8 +34,13 @@ if (TOOLCHAIN STREQUAL "armgcc")
 	add_executable(${PLAYDATE_GAME_DEVICE} src/main.c
 			src/game.h
 			src/game.c
+			src/objects/car.c
 			src/objects/visual.h
 			src/objects/car.h
+			src/utils/graphicsUtils.c
+			src/utils/graphicsUtils.h
+			src/objects/arena.c
+			src/objects/arena.h
 			src/objects/objects.c
 			src/objects/objects.h
 	)

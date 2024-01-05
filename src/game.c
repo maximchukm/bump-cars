@@ -28,6 +28,8 @@ void setPDPtr(PlaydateAPI* p) {
 
 int update(void* userdata)
 {
+    float crankAngle = pd->system->getCrankAngle();
+    objects->car->rotate(playerCar, crankAngle);
     pd->sprite->updateAndDrawSprites();
     return 1;
 }
@@ -35,10 +37,16 @@ int update(void* userdata)
 void setupGame(void) {
     objects = initObjects(pd);
     arena = objects->arena->create();
-    playerCar = objects->car->create(100, 50);
-//    playerCar->rotate(playerCar, 0);
 
-    opponentCars[0] = objects->car->create(150, 50);
-    opponentCars[1] = objects->car->create(150, 100);
+    playerCar = objects->car->create(100, 50);
+    playerCar->maxSpeed = 3;
+    playerCar->acceleration = 0.05;
+
+    objects->car->rotate(playerCar, 90);
+
+//    opponentCars[0] = objects->car->create(150, 50);
+//    objects->car->rotate(opponentCars[0], 47);
+
+//    opponentCars[1] = objects->car->create(150, 100);
 
 }

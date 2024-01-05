@@ -15,7 +15,7 @@ LCDBitmap *createBitmap(PlaydateAPI *pd, const char* imagePath) {
     const char *outErr = NULL;
     LCDBitmap *bitmap = pd->graphics->loadBitmap(imagePath, &outErr);
     if (outErr != NULL) {
-        pd->system->logToConsole("Error loading sprite bitmap '%s'", outErr);
+        pd->system->error("Error loading sprite bitmap '%s'", outErr);
     }
     return bitmap;
 }
@@ -24,7 +24,7 @@ LCDBitmapTable *loadBitmapTable(PlaydateAPI *pd, const char* path) {
     const char *outErr = NULL;
     LCDBitmapTable *bitmapTable = pd->graphics->loadBitmapTable(path, &outErr);
     if (outErr != NULL) {
-        pd->system->logToConsole("Error loading sprite bitmap '%s'", outErr);
+        pd->system->error("Error loading sprite bitmap '%s'", outErr);
     }
     return bitmapTable;
 }
