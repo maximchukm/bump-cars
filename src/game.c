@@ -38,7 +38,7 @@ void setupGame(void) {
     objects = initObjects(pd);
     arena = objects->arena->create();
 
-    playerCar = objects->car->create(100, 50);
+    playerCar = objects->car->create(100, 100);
     playerCar->maxSpeed = 3;
     playerCar->acceleration = 0.05;
 

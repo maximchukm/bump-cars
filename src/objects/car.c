@@ -12,6 +12,13 @@ static LCDBitmapTable *car1BitmapTable;
 
 static PlaydateAPI *pd;
 
+static void rotateCar(Car *car, float angle) {
+    if (angle > 0) {
+        car->angle = 45 * div((int) angle, 45).quot;
+    }
+    pd->sprite->markDirty(car->visual->sprite);
+}
+
 static void carDrawFunction(LCDSprite *sprite, PDRect bounds, PDRect drawrect) {
     Car *car = (Car *) pd->sprite->getUserdata(sprite);
 
@@ -40,40 +47,50 @@ static void updateCar(LCDSprite *sprite) {
         car->speed = speed;
     }
 
+    float goalX = x, goalY = y;
     switch (car->angle) {
         case 0:
-            pd->sprite->moveTo(sprite, x, y - speed);
+            goalY -= speed;
             break;
         case 45:
-            pd->sprite->moveTo(sprite, x + speed, y - speed);
+            goalX += speed;
+            goalY -= speed;
             break;
         case 90:
-            pd->sprite->moveTo(sprite, x + speed, y);
+            goalX += speed;
             break;
         case 135:
-            pd->sprite->moveTo(sprite, x + speed, y + speed);
+            goalX += speed;
+            goalY += speed;
             break;
         case 180:
-            pd->sprite->moveTo(sprite, x, y + speed);
+            goalY += speed;
             break;
         case 225:
-            pd->sprite->moveTo(sprite, x - speed, y + speed);
+            goalX -= speed;
+            goalY += speed;
             break;
         case 270:
-            pd->sprite->moveTo(sprite, x - speed, y);
+            goalX -= speed;
             break;
         case 315:
-            pd->sprite->moveTo(sprite, x - speed, y - speed);
+            goalX -= speed;
+            goalY -= speed;
             break;
+    }
+
+    float actualX, actualY;
+    int len;
+    SpriteCollisionInfo *collisionInfo = pd->sprite->moveWithCollisions(sprite, goalX, goalY, &actualX, &actualY, &len);
+    if (collisionInfo != NULL) {
+        car->speed -= car->speed * 1.3;
+        free(collisionInfo);
     }
 
 }
 
-static void rotateCar(Car *car, float angle) {
-    if (angle > 0) {
-        car->angle = 45 * div((int) angle, 45).quot;
-    }
-    pd->sprite->markDirty(car->visual->sprite);
+static SpriteCollisionResponseType checkCollision(LCDSprite *first, LCDSprite *second) {
+    return kCollisionTypeBounce;
 }
 
 static Car *createCar(float x, float y) {
@@ -89,6 +106,11 @@ static Car *createCar(float x, float y) {
     pd->sprite->setDrawFunction(sprite, carDrawFunction);
     pd->sprite->setUpdateFunction(sprite, updateCar);
     pd->sprite->setUpdatesEnabled(sprite, 1);
+
+    pd->sprite->setCollisionsEnabled(sprite, 1);
+    pd->sprite->setCollideRect(sprite, PDRectMake(0, 0, 36, 36));
+    pd->sprite->setCollisionResponseFunction(sprite, checkCollision);
+
     pd->sprite->addSprite(sprite);
 
     Car *car = malloc(sizeof(Car));
