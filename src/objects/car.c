@@ -3,6 +3,7 @@
 //
 #include <math.h>
 #include "car.h"
+#include "../physics/physicsFunctions.h"
 #include "../utils/graphicsUtils.h"
 
 const char *carPath = "images/bump-car";
@@ -13,6 +14,14 @@ static LCDBitmapTable *car1BitmapTable = NULL;
 static PlaydateAPI *pd = NULL;
 
 static Physics *physics = NULL;
+
+static Car* get_car(LCDSprite *sprite) {
+    if (pd->sprite->getTag(sprite) == 'c') {
+        return (Car *) pd->sprite->getUserdata(sprite);
+    } else {
+        return NULL;
+    }
+}
 
 static void rotateCar(Car *car, float angle) {
     if (angle > 0) {
@@ -37,15 +46,15 @@ static void carDrawFunction(LCDSprite *sprite, PDRect bounds, PDRect drawrect) {
 }
 
 static void updateCar(LCDSprite *sprite) {
-    Car *car = (Car *) pd->sprite->getUserdata(sprite);
+    Car *car = get_car(sprite);
 
     float x, y;
     pd->sprite->getPosition(sprite, &x, &y);
 
     float goalX = x, goalY = y;
 
-    physics->apply_force_to_movement_vectors(car->movement_vectors, car->mass, car->angle, car->propulsion_force);
-    physics->calculate_new_position(&goalX, &goalY, car->mass, car->movement_vectors);
+    physics->apply_force_to_movement_vectors(car, car->angle, car->propulsion_force);
+    physics->calculate_new_position(car, &goalX, &goalY);
 
     float actualX, actualY;
     int len;
@@ -78,14 +87,12 @@ static void updateCar(LCDSprite *sprite) {
         }
 
         if (movement_vector != NULL) {
-            uint8_t tag = pd->sprite->getTag(collisionInfo->other);
-
-            if (tag == 'c') {
-                Car *otherCar = pd->sprite->getUserdata(collisionInfo->other);
-                physics->apply_force_to_movement_vectors(otherCar->movement_vectors, otherCar->mass, movement_vector->direction_angle,
+            Car *otherCar = get_car(collisionInfo->other);
+            if (otherCar != NULL) {
+                physics->apply_force_to_movement_vectors(otherCar, movement_vector->direction_angle,
                                                          movement_vector->speed + car->mass);
             } else {
-                physics->apply_force_to_movement_vectors(car->movement_vectors, car->mass, impact_angle,
+                physics->apply_force_to_movement_vectors(car, impact_angle,
                                                          movement_vector->speed * 2);
                 movement_vector->speed = 0;
             }
@@ -149,6 +156,7 @@ struct car_functions *initCarModule(PlaydateAPI *playdate) {
 
     struct car_functions *functions = malloc(sizeof(struct car_functions));
     functions->create = create_car;
+    functions->get = get_car;
     functions->add = add_car;
     functions->rotate = rotateCar;
     return functions;

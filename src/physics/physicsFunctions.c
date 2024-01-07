@@ -8,14 +8,16 @@
 
 const int MASS_REDUCTION_FACTOR = 5;
 const int SPEED_REDUCTION_FACTOR = 10;
+const int SLIDE_FACTOR = 3;
 
 
 static double acceleration(double force, double speed, double mass) {
     return force / (exp(mass / MASS_REDUCTION_FACTOR) + exp(speed / SPEED_REDUCTION_FACTOR));
 }
 
-static double deceleration(double speed, double mass) {
-    return log(speed / SPEED_REDUCTION_FACTOR + 1) / exp(mass / MASS_REDUCTION_FACTOR);
+static double deceleration(double speed, double mass, int is_slide) {
+    double slide_factor = is_slide == 1 ? SLIDE_FACTOR : 1;
+    return log(speed / SPEED_REDUCTION_FACTOR + 1) / exp(mass / MASS_REDUCTION_FACTOR) * slide_factor;
 }
 
 static MovementVector *create_MovementVector(int direction_angle, double speed) {
@@ -25,26 +27,30 @@ static MovementVector *create_MovementVector(int direction_angle, double speed) 
     return vector;
 }
 
-static void apply_force_to_movement_vectors(MovementVector **movement_vectors, double mass, int force_direction_angle,
+static void apply_force_to_movement_vectors(Car *car, int force_direction_angle,
                                             double force) {
     for (int i = 0; i < 8; i++) {
-        MovementVector *movement_vector = movement_vectors[i];
+        MovementVector *movement_vector = car->movement_vectors[i];
         if (movement_vector->direction_angle == force_direction_angle) {
-            movement_vector->speed += acceleration(force, movement_vector->speed, mass);
+            movement_vector->speed += acceleration(force, movement_vector->speed, car->mass);
             break;
         }
     }
 }
 
-static void calculate_new_position(float *px, float *py, double mass, MovementVector **movementVectors) {
+static void calculate_new_position(Car *car, float *px, float *py) {
     double x = (double)*px;
     double y = (double)*py;
 
     for (int i = 0; i < 8; i++) {
-        double speed = movementVectors[i]->speed;
-        int angle = movementVectors[i]->direction_angle;
+        MovementVector *movementVector = car->movement_vectors[i];
+        double speed = movementVector->speed;
+        int angle = movementVector->direction_angle;
 
-        movementVectors[i]->speed -= deceleration(speed, mass);
+        int diffAngle = abs(angle - car->angle);
+        int slide = diffAngle == 90 || diffAngle == 270 ? 1 : 0;
+
+        movementVector->speed -= deceleration(speed, car->mass, slide);
 
         switch (angle) {
             case 0:

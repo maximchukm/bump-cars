@@ -6,7 +6,7 @@
 #define BUMP_CARS_CAR_H
 
 #include "visual.h"
-#include "../physics/physicsFunctions.h"
+#include "../physics/vectors.h"
 
 typedef struct {
     const struct visual *visual;
@@ -18,6 +18,7 @@ typedef struct {
 
 struct car_functions {
     Car* (*create)(double propulsion_force, double mass);
+    Car* (*get)(LCDSprite *sprite);
     void (*add)(Car *car, float x, float y, float angle);
     void (*rotate)(Car *car, float angle);
 };
