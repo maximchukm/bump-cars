@@ -10,10 +10,10 @@
 typedef struct visual Visual;
 
 struct visual {
-    const char* imagePath;
+    const char* image_path;
     PDRect bounds;
     LCDSprite *sprite;
-    short zIndex;
+    short z_index;
 };
 
 #endif //BUMP_CARS_VISUAL_H

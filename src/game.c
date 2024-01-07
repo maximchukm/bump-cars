@@ -18,9 +18,7 @@ static PlaydateAPI* pd = NULL;
 
 static Objects *objects;
 
-static Arena *arena;
 static Car *playerCar;
-static Car *opponentCars[2];
 
 void setPDPtr(PlaydateAPI* p) {
     pd = p;
@@ -36,17 +34,13 @@ int update(void* userdata)
 
 void setupGame(void) {
     objects = initObjects(pd);
-    arena = objects->arena->create();
+    objects->arena->create();
 
-    playerCar = objects->car->create(100, 100);
-    playerCar->maxSpeed = 3;
-    playerCar->acceleration = 0.05;
+    playerCar = objects->car->create(0.5, 3);
+//    playerCar = objects->car->create(0.7, 20);
+    objects->car->add(playerCar, 100, 100, 90);
 
-    objects->car->rotate(playerCar, 90);
-
-//    opponentCars[0] = objects->car->create(150, 50);
-//    objects->car->rotate(opponentCars[0], 47);
-
-//    opponentCars[1] = objects->car->create(150, 100);
+    Car *otherCar = objects->car->create(0, 1);
+    objects->car->add(otherCar, 250, 150, 270);
 
 }

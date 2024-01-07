@@ -8,10 +8,10 @@
 
 #include "../objects/visual.h"
 
-LCDSprite *createSprite(PlaydateAPI *pd, Visual *visual);
+LCDSprite *create_sprite(PlaydateAPI *pd, Visual *visual);
 
-LCDBitmap *createBitmap(PlaydateAPI *pd, const char* imagePath);
+LCDBitmap *create_bitmap(PlaydateAPI *pd, const char* imagePath);
 
-LCDBitmapTable *loadBitmapTable(PlaydateAPI *pd, const char* path);
+LCDBitmapTable *load_bitmap_table(PlaydateAPI *pd, const char* path);
 
 #endif //BUMP_CARS_GRAPHICSUTILS_H

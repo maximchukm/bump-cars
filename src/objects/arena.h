@@ -11,10 +11,10 @@ typedef struct {
     const struct visual *visual;
 } Arena;
 
-struct arenaFunctions {
+struct arena_functions {
     Arena* (*create)(void);
 };
 
-struct arenaFunctions *initArenaModule(PlaydateAPI *playdate);
+struct arena_functions *initArenaModule(PlaydateAPI *playdate);
 
 #endif //BUMP_CARS_ARENA_H

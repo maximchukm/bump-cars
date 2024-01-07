@@ -19,16 +19,17 @@ static void createEdge(PDRect rect, float x, float y) {
     pd->sprite->setBounds(edge, rect);
     pd->sprite->setCollisionsEnabled(edge, 1);
     pd->sprite->setCollideRect(edge, rect);
+    pd->sprite->setTag(edge, 's');
     pd->sprite->moveTo(edge, x, y);
     pd->sprite->addSprite(edge);
 }
 
 static Arena *createArena(void) {
     Visual *visual = malloc(sizeof(Visual));
-    visual->imagePath = arenaPath;
+    visual->image_path = arenaPath;
     visual->bounds = PDRectMake(0, 0, 400, 240);
-    visual->zIndex = 0;
-    visual->sprite = createSprite(pd, visual);
+    visual->z_index = 0;
+    visual->sprite = create_sprite(pd, visual);
     pd->sprite->setDrawFunction(visual->sprite, arenaDrawFunction);
     pd->sprite->addSprite(visual->sprite);
 
@@ -47,11 +48,11 @@ static Arena *createArena(void) {
     return arena;
 }
 
-struct arenaFunctions *initArenaModule(PlaydateAPI *playdate) {
+struct arena_functions *initArenaModule(PlaydateAPI *playdate) {
     pd = playdate;
-    bitmap = createBitmap(pd, arenaPath);
+    bitmap = create_bitmap(pd, arenaPath);
 
-    struct arenaFunctions *functions = malloc(sizeof(struct arenaFunctions));
+    struct arena_functions *functions = malloc(sizeof(struct arena_functions));
     functions->create = createArena;
     return functions;
 }

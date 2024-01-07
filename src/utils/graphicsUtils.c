@@ -4,14 +4,14 @@
 
 #include "graphicsUtils.h"
 
-LCDSprite *createSprite(PlaydateAPI *pd, Visual *visual) {
+LCDSprite *create_sprite(PlaydateAPI *pd, Visual *visual) {
     LCDSprite *sprite = pd->sprite->newSprite();
     pd->sprite->setBounds(sprite, visual->bounds);
-    pd->sprite->setZIndex(sprite, visual->zIndex);
+    pd->sprite->setZIndex(sprite, visual->z_index);
     return sprite;
 }
 
-LCDBitmap *createBitmap(PlaydateAPI *pd, const char* imagePath) {
+LCDBitmap *create_bitmap(PlaydateAPI *pd, const char* imagePath) {
     const char *outErr = NULL;
     LCDBitmap *bitmap = pd->graphics->loadBitmap(imagePath, &outErr);
     if (outErr != NULL) {
@@ -20,7 +20,7 @@ LCDBitmap *createBitmap(PlaydateAPI *pd, const char* imagePath) {
     return bitmap;
 }
 
-LCDBitmapTable *loadBitmapTable(PlaydateAPI *pd, const char* path) {
+LCDBitmapTable *load_bitmap_table(PlaydateAPI *pd, const char* path) {
     const char *outErr = NULL;
     LCDBitmapTable *bitmapTable = pd->graphics->loadBitmapTable(path, &outErr);
     if (outErr != NULL) {

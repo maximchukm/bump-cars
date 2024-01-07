@@ -6,20 +6,22 @@
 #define BUMP_CARS_CAR_H
 
 #include "visual.h"
+#include "../physics/physicsFunctions.h"
 
 typedef struct {
     const struct visual *visual;
-    float maxSpeed;
-    float acceleration;
-    float speed;
+    double mass;
+    double propulsion_force;
     int angle;
+    MovementVector *movement_vectors[8];
 } Car;
 
-struct carFunctions {
-    Car* (*create)(float, float);
+struct car_functions {
+    Car* (*create)(double propulsion_force, double mass);
+    void (*add)(Car *car, float x, float y, float angle);
     void (*rotate)(Car *car, float angle);
 };
 
-struct carFunctions *initCarModule(PlaydateAPI *playdate);
+struct car_functions *initCarModule(PlaydateAPI *playdate);
 
 #endif //BUMP_CARS_CAR_H

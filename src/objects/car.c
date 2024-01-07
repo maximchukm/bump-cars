@@ -8,9 +8,11 @@
 const char *carPath = "images/bump-car";
 const char *car1Path = "images/car1";
 
-static LCDBitmapTable *car1BitmapTable;
+static LCDBitmapTable *car1BitmapTable = NULL;
 
-static PlaydateAPI *pd;
+static PlaydateAPI *pd = NULL;
+
+static Physics *physics = NULL;
 
 static void rotateCar(Car *car, float angle) {
     if (angle > 0) {
@@ -40,66 +42,85 @@ static void updateCar(LCDSprite *sprite) {
     float x, y;
     pd->sprite->getPosition(sprite, &x, &y);
 
-    float speed = car->speed + car->acceleration;
-    if (speed > car->maxSpeed) {
-        speed = car->maxSpeed;
-    } else {
-        car->speed = speed;
-    }
-
     float goalX = x, goalY = y;
-    switch (car->angle) {
-        case 0:
-            goalY -= speed;
-            break;
-        case 45:
-            goalX += speed;
-            goalY -= speed;
-            break;
-        case 90:
-            goalX += speed;
-            break;
-        case 135:
-            goalX += speed;
-            goalY += speed;
-            break;
-        case 180:
-            goalY += speed;
-            break;
-        case 225:
-            goalX -= speed;
-            goalY += speed;
-            break;
-        case 270:
-            goalX -= speed;
-            break;
-        case 315:
-            goalX -= speed;
-            goalY -= speed;
-            break;
-    }
+
+    physics->apply_force_to_movement_vectors(car->movement_vectors, car->mass, car->angle, car->propulsion_force);
+    physics->calculate_new_position(&goalX, &goalY, car->mass, car->movement_vectors);
 
     float actualX, actualY;
     int len;
-    SpriteCollisionInfo *collisionInfo = pd->sprite->moveWithCollisions(sprite, goalX, goalY, &actualX, &actualY, &len);
+    SpriteCollisionInfo *collisionInfo = pd->sprite->moveWithCollisions(sprite, goalX, goalY, &actualX, &actualY,
+                                                                        &len);
     if (collisionInfo != NULL) {
-        car->speed -= car->speed * 1.3;
+        int impact_angle = 0;
+        if (collisionInfo->normal.x < 0) {
+            impact_angle = 270;
+        }
+        if (collisionInfo->normal.x > 0) {
+            impact_angle = 90;
+        }
+
+        if (collisionInfo->normal.y < 0) {
+            impact_angle = 0;
+        }
+        if (collisionInfo->normal.y > 0) {
+            impact_angle = 180;
+        }
+
+        MovementVector *movement_vector = NULL;
+        int impact_car_angle = impact_angle + 180;
+        impact_car_angle = impact_car_angle >= 360 ? impact_car_angle - 360 : impact_car_angle;
+        for (int i = 0; i < 8; i++) {
+            if (car->movement_vectors[i]->direction_angle == impact_car_angle) {
+                movement_vector = car->movement_vectors[i];
+                break;
+            }
+        }
+
+        if (movement_vector != NULL) {
+            uint8_t tag = pd->sprite->getTag(collisionInfo->other);
+
+            if (tag == 'c') {
+                Car *otherCar = pd->sprite->getUserdata(collisionInfo->other);
+                physics->apply_force_to_movement_vectors(otherCar->movement_vectors, otherCar->mass, movement_vector->direction_angle,
+                                                         movement_vector->speed + car->mass);
+            } else {
+                physics->apply_force_to_movement_vectors(car->movement_vectors, car->mass, impact_angle,
+                                                         movement_vector->speed * 2);
+                movement_vector->speed = 0;
+            }
+        }
+
         free(collisionInfo);
     }
-
 }
 
 static SpriteCollisionResponseType checkCollision(LCDSprite *first, LCDSprite *second) {
     return kCollisionTypeBounce;
 }
 
-static Car *createCar(float x, float y) {
-    Visual *visual = malloc(sizeof(Visual));
-    visual->imagePath = carPath;
-    visual->bounds = PDRectMake(0, 0, 36, 36);
-    visual->zIndex = 1;
+static Car *create_car(double propulsion_force, double mass) {
+    Car *car = malloc(sizeof(Car));
+    car->propulsion_force = propulsion_force;
+    car->mass = mass;
 
-    LCDSprite *sprite = createSprite(pd, visual);
+    int movement_angle = 0;
+    for (int i = 0; i < 8; i++) {
+        MovementVector *movementVector = physics->create_MovementVector(movement_angle, 0);
+        car->movement_vectors[i] = movementVector;
+        movement_angle += 45;
+    }
+
+    return car;
+}
+
+static void add_car(Car *car, float x, float y, float angle) {
+    Visual *visual = malloc(sizeof(Visual));
+    visual->image_path = carPath;
+    visual->bounds = PDRectMake(0, 0, 36, 36);
+    visual->z_index = 1;
+
+    LCDSprite *sprite = create_sprite(pd, visual);
     visual->sprite = sprite;
 
     pd->sprite->moveTo(sprite, x, y);
@@ -110,25 +131,25 @@ static Car *createCar(float x, float y) {
     pd->sprite->setCollisionsEnabled(sprite, 1);
     pd->sprite->setCollideRect(sprite, PDRectMake(0, 0, 36, 36));
     pd->sprite->setCollisionResponseFunction(sprite, checkCollision);
+    pd->sprite->setTag(sprite, 'c');
+    pd->sprite->setUserdata(sprite, car);
+
 
     pd->sprite->addSprite(sprite);
-
-    Car *car = malloc(sizeof(Car));
     car->visual = visual;
-    car->angle = 0;
 
-    pd->sprite->setUserdata(car->visual->sprite, car);
+    rotateCar(car, angle);
 
-    return car;
 }
 
-struct carFunctions *initCarModule(PlaydateAPI *playdate) {
+struct car_functions *initCarModule(PlaydateAPI *playdate) {
     pd = playdate;
-    car1BitmapTable = loadBitmapTable(pd, car1Path);
+    physics = init_physics();
+    car1BitmapTable = load_bitmap_table(pd, car1Path);
 
-    struct carFunctions *functions = malloc(sizeof(struct carFunctions));
-    functions->create = createCar;
+    struct car_functions *functions = malloc(sizeof(struct car_functions));
+    functions->create = create_car;
+    functions->add = add_car;
     functions->rotate = rotateCar;
     return functions;
 }
-

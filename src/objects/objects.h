@@ -8,12 +8,10 @@
 #include "arena.h"
 #include "car.h"
 
-typedef struct Objects Objects;
-
-struct Objects {
-    const struct arenaFunctions* arena;
-    const struct carFunctions* car;
-};
+typedef struct {
+    const struct arena_functions* arena;
+    const struct car_functions* car;
+} Objects;
 
 Objects *initObjects(PlaydateAPI *playdateApi);
 

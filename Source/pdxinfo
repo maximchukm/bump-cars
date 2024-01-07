@@ -2,4 +2,4 @@ name=Bump Cars
 author=Maksym Maksymchuk
 description=Simple car bumping game
 bundleID=com.maksymchuk.playdate
-imagePath=
+image_path=
