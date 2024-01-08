@@ -20,10 +20,10 @@ static double deceleration(double speed, double mass, int is_slide) {
     return log(speed / SPEED_REDUCTION_FACTOR + 1) / exp(mass / MASS_REDUCTION_FACTOR) * slide_factor;
 }
 
-static MovementVector *create_MovementVector(int direction_angle, double speed) {
+static MovementVector *create_MovementVector(int direction_angle, double force) {
     MovementVector *vector = malloc(sizeof(MovementVector));
     vector->direction_angle = direction_angle;
-    vector->speed = speed;
+    vector->force = force;
     return vector;
 }
 
@@ -32,7 +32,7 @@ static void apply_force_to_movement_vectors(Car *car, int force_direction_angle,
     for (int i = 0; i < 8; i++) {
         MovementVector *movement_vector = car->movement_vectors[i];
         if (movement_vector->direction_angle == force_direction_angle) {
-            movement_vector->speed += acceleration(force, movement_vector->speed, car->mass);
+            movement_vector->force += acceleration(force, movement_vector->force, car->mass);
             break;
         }
     }
@@ -44,13 +44,13 @@ static void calculate_new_position(Car *car, float *px, float *py) {
 
     for (int i = 0; i < 8; i++) {
         MovementVector *movementVector = car->movement_vectors[i];
-        double speed = movementVector->speed;
+        double speed = movementVector->force;
         int angle = movementVector->direction_angle;
 
         int diffAngle = abs(angle - car->angle);
         int slide = diffAngle == 90 || diffAngle == 270 ? 1 : 0;
 
-        movementVector->speed -= deceleration(speed, car->mass, slide);
+        movementVector->force -= deceleration(speed, car->mass, slide);
 
         switch (angle) {
             case 0:

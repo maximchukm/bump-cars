@@ -10,7 +10,7 @@
 #include "../objects/car.h"
 
 typedef struct {
-    MovementVector* (*create_MovementVector)(int direction_angle, double speed);
+    MovementVector* (*create_MovementVector)(int direction_angle, double force);
     void (*apply_force_to_movement_vectors)(Car *car, int forceDirectionAngle, double force);
     void (*calculate_new_position)(Car *car, float *px, float *py);
 } Physics;

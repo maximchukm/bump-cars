@@ -40,7 +40,7 @@ void setupGame(void) {
 //    playerCar = objects->car->create(0.7, 20);
     objects->car->add(playerCar, 100, 100, 90);
 
-    Car *otherCar = objects->car->create(0, 1);
+    Car *otherCar = objects->car->create(0, 3);
     objects->car->add(otherCar, 250, 150, 270);
 
 }

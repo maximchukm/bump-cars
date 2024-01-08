@@ -15,12 +15,23 @@ static PlaydateAPI *pd = NULL;
 
 static Physics *physics = NULL;
 
-static Car* get_car(LCDSprite *sprite) {
+static Car *get_car(LCDSprite *sprite) {
     if (pd->sprite->getTag(sprite) == 'c') {
         return (Car *) pd->sprite->getUserdata(sprite);
     } else {
         return NULL;
     }
+}
+
+static enum car_orientation get_car_orientation(Car *car) {
+    int angle = car->angle;
+    if (angle == 270 || angle == 90) {
+        return kHorizontal;
+    }
+    if (angle == 0 || angle == 180) {
+        return kVertical;
+    }
+    return kDiagonal;
 }
 
 static void rotateCar(Car *car, float angle) {
@@ -48,12 +59,24 @@ static void carDrawFunction(LCDSprite *sprite, PDRect bounds, PDRect drawrect) {
 static void updateCar(LCDSprite *sprite) {
     Car *car = get_car(sprite);
 
+    //update collision rect
+    switch (get_car_orientation(car)) {
+        case kHorizontal:
+            pd->sprite->setCollideRect(sprite, PDRectMake(2, 8, 32, 20));
+            break;
+        case kVertical:
+            pd->sprite->setCollideRect(sprite, PDRectMake(8, 2, 20, 32));
+            break;
+        default:
+            pd->sprite->setCollideRect(sprite, PDRectMake(0, 0, 36, 36));
+    }
+
     float x, y;
     pd->sprite->getPosition(sprite, &x, &y);
 
+    physics->apply_force_to_movement_vectors(car, car->angle, car->propulsion_force);
     float goalX = x, goalY = y;
 
-    physics->apply_force_to_movement_vectors(car, car->angle, car->propulsion_force);
     physics->calculate_new_position(car, &goalX, &goalY);
 
     float actualX, actualY;
@@ -90,11 +113,11 @@ static void updateCar(LCDSprite *sprite) {
             Car *otherCar = get_car(collisionInfo->other);
             if (otherCar != NULL) {
                 physics->apply_force_to_movement_vectors(otherCar, movement_vector->direction_angle,
-                                                         movement_vector->speed + car->mass);
+                                                         movement_vector->force * 2 * car->mass / otherCar->mass);
             } else {
                 physics->apply_force_to_movement_vectors(car, impact_angle,
-                                                         movement_vector->speed * 2);
-                movement_vector->speed = 0;
+                                                         movement_vector->force * 2);
+                movement_vector->force = 0;
             }
         }
 
@@ -136,7 +159,6 @@ static void add_car(Car *car, float x, float y, float angle) {
     pd->sprite->setUpdatesEnabled(sprite, 1);
 
     pd->sprite->setCollisionsEnabled(sprite, 1);
-    pd->sprite->setCollideRect(sprite, PDRectMake(0, 0, 36, 36));
     pd->sprite->setCollisionResponseFunction(sprite, checkCollision);
     pd->sprite->setTag(sprite, 'c');
     pd->sprite->setUserdata(sprite, car);

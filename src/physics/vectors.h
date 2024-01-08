@@ -7,7 +7,7 @@
 
 typedef struct {
     int direction_angle;
-    double speed;
+    double force;
 } MovementVector;
 
 #endif //BUMP_CARS_VECTORS_H

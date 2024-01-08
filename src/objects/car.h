@@ -16,6 +16,12 @@ typedef struct {
     MovementVector *movement_vectors[8];
 } Car;
 
+enum car_orientation {
+    kHorizontal,
+    kVertical,
+    kDiagonal
+};
+
 struct car_functions {
     Car* (*create)(double propulsion_force, double mass);
     Car* (*get)(LCDSprite *sprite);
