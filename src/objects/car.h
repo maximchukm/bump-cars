@@ -12,7 +12,8 @@ typedef struct {
     const struct visual *visual;
     double mass;
     double propulsion_force;
-    int angle;
+    int propulsion_angle;
+    int target_propulsion_angle;
     MovementVector *movement_vectors[8];
 } Car;
 
@@ -25,7 +26,7 @@ enum car_orientation {
 struct car_functions {
     Car* (*create)(double propulsion_force, double mass);
     Car* (*get)(LCDSprite *sprite);
-    void (*add)(Car *car, float x, float y, float angle);
+    void (*add)(Car *car, float x, float y, int angle);
     void (*rotate)(Car *car, float angle);
 };
 

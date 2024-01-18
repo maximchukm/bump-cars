@@ -12,33 +12,35 @@
 
 #include "game.h"
 #include "objects/objects.h"
+#include "physics/physicsFunctions.h"
 
 
-static PlaydateAPI* pd = NULL;
+static PlaydateAPI *pd = NULL;
 
-static Objects *objects;
+static Objects *objects = NULL;
 
-static Car *playerCar;
+static Car *playerCar = NULL;
 
-void setPDPtr(PlaydateAPI* p) {
+void setPDPtr(PlaydateAPI *p) {
     pd = p;
 }
 
-int update(void* userdata)
-{
+int update(void *userdata) {
     float crankAngle = pd->system->getCrankAngle();
     objects->car->rotate(playerCar, crankAngle);
     pd->sprite->updateAndDrawSprites();
+
     return 1;
 }
 
 void setupGame(void) {
     objects = initObjects(pd);
     objects->arena->create();
+    init_physics();
 
     playerCar = objects->car->create(0.5, 3);
 //    playerCar = objects->car->create(0.7, 20);
-    objects->car->add(playerCar, 100, 100, 90);
+    objects->car->add(playerCar, 100, 100, (int) pd->system->getCrankAngle());
 
     Car *otherCar = objects->car->create(0, 3);
     objects->car->add(otherCar, 250, 150, 270);
