@@ -34,7 +34,8 @@ int update(void *userdata) {
 }
 
 void setupGame(void) {
-    objects = initObjects(pd);
+    Logging *logging = initLogging(pd);
+    objects = initObjects(pd, logging);
     objects->arena->create();
     init_physics();
 

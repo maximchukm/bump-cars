@@ -7,6 +7,7 @@
 
 #include "visual.h"
 #include "../physics/vectors.h"
+#include "../utils/logUtils.h"
 
 typedef struct {
     const struct visual *visual;
@@ -30,6 +31,6 @@ struct car_functions {
     void (*rotate)(Car *car, float angle);
 };
 
-struct car_functions *initCarModule(PlaydateAPI *playdate);
+struct car_functions *initCarModule(PlaydateAPI *playdate, Logging *logging);
 
 #endif //BUMP_CARS_CAR_H

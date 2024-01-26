@@ -47,6 +47,8 @@ if (TOOLCHAIN STREQUAL "armgcc")
 			src/physics/physicsFunctions.h
 			src/objects/carFunctions.h
 			src/physics/vectors.h
+			src/utils/logUtils.c
+			src/utils/logUtils.h
 	)
 else()
 	add_library(${PLAYDATE_GAME_NAME} SHARED src/main.c
@@ -65,6 +67,8 @@ else()
 			src/physics/physicsFunctions.h
 			src/objects/carFunctions.h
 			src/physics/vectors.h
+			src/utils/logUtils.c
+			src/utils/logUtils.h
 	)
 endif()
 

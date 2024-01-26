@@ -13,6 +13,6 @@ typedef struct {
     const struct car_functions* car;
 } Objects;
 
-Objects *initObjects(PlaydateAPI *playdateApi);
+Objects *initObjects(PlaydateAPI *playdateApi, Logging *logging);
 
 #endif //BUMP_CARS_OBJECTS_H
