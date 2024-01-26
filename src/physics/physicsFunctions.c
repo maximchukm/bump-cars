@@ -47,7 +47,7 @@ static void calculate_new_position(Car *car, float *px, float *py) {
         double speed = movementVector->force;
         int angle = movementVector->direction_angle;
 
-        int diffAngle = abs(angle - car->propulsion_angle);
+        int diffAngle = abs(angle - car->direction);
         int slide = diffAngle == 90 || diffAngle == 270 ? 1 : 0;
 
         movementVector->force -= deceleration(speed, car->mass, slide);

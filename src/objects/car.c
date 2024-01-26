@@ -36,8 +36,8 @@ static Car *get_car(LCDSprite *sprite) {
     }
 }
 
-static enum car_orientation get_car_orientation(Car *car) {
-    int angle = car->propulsion_angle;
+static enum CarOrientation get_car_orientation(Car *car) {
+    int angle = car->direction;
     if (angle == 270 || angle == 90) {
         return kHorizontal;
     }
@@ -50,7 +50,7 @@ static enum car_orientation get_car_orientation(Car *car) {
 static MovementVector *get_forward_movement_vector(Car *car) {
     for (int i = 0; i < 8; i++) {
         MovementVector *vector = car->movement_vectors[i];
-        if (vector->direction_angle == car->propulsion_angle) {
+        if (vector->direction_angle == car->direction) {
             return vector;
         }
     }
@@ -58,7 +58,7 @@ static MovementVector *get_forward_movement_vector(Car *car) {
 }
 
 static MovementVector *get_backward_movement_vector(Car *car) {
-    int opposite_angle = car->propulsion_angle + 180;
+    int opposite_angle = car->direction + 180;
     opposite_angle = opposite_angle >= 360 ? opposite_angle - 360 : opposite_angle;
 
     for (int i = 0; i < 8; i++) {
@@ -70,17 +70,17 @@ static MovementVector *get_backward_movement_vector(Car *car) {
     return NULL;
 }
 
-static void rotate_car(Car *car, float angle) {
+static void set_car_direction(Car *car, float angle) {
 
     // check if car moving
     MovementVector *forward_vector = get_forward_movement_vector(car);
     MovementVector *backward_vector = get_backward_movement_vector(car);
-    if ((forward_vector == NULL || forward_vector->force < 0.01) &&
-        (backward_vector == NULL || backward_vector->force < 0.01)) {
+    if ((forward_vector == NULL || forward_vector->force < 0.1) &&
+        (backward_vector == NULL || backward_vector->force < 0.1)) {
         return;
     }
 
-    car->target_propulsion_angle = normalize_angle((int) angle);
+    car->target_direction = normalize_angle((int) angle);
 
     pd->sprite->markDirty(car->visual->sprite);
 }
@@ -111,7 +111,7 @@ static void calculate_collision_impact(SpriteCollisionInfo *collisionInfo) {
 
         MovementVector *movement_vector = NULL;
         for (int i = 0; i < 8; i++) {
-            if (car->movement_vectors[i]->direction_angle == car->propulsion_angle) {
+            if (car->movement_vectors[i]->direction_angle == car->direction) {
                 movement_vector = car->movement_vectors[i];
                 break;
             }
@@ -141,27 +141,10 @@ static void car_draw_function(LCDSprite *sprite, PDRect bounds, PDRect drawrect)
     int x = (int) floorf(px) - 18;
     int y = (int) floorf(py) - 18;
 
-    int bitmapIndex = car->propulsion_angle > 0 ? 8 - (int) (car->propulsion_angle / 45) : 0;
+    int bitmapIndex = car->direction > 0 ? 8 - (int) (car->direction / 45) : 0;
 
     LCDBitmap *bitmap = pd->graphics->getTableBitmap(car1BitmapTable, bitmapIndex);
     pd->graphics->drawBitmap(bitmap, x, y, kBitmapUnflipped);
-}
-
-static void update_car(LCDSprite *sprite) {
-    Car *car = get_car(sprite);
-
-    // rotate car if needed
-    int current_angle = car->propulsion_angle;
-    int target_angle = car->target_propulsion_angle;
-
-    int diff = current_angle - target_angle;
-    if (diff != 0) {
-        if ((abs(diff) < 180 && diff < 0) || (abs(diff) > 180 && diff > 0)) {
-            car->propulsion_angle = normalize_angle(current_angle + 45);
-        } else {
-            car->propulsion_angle = normalize_angle(current_angle - 45);
-        }
-    }
 
     //update collision rect
     switch (get_car_orientation(car)) {
@@ -174,22 +157,59 @@ static void update_car(LCDSprite *sprite) {
         default:
             pd->sprite->setCollideRect(sprite, PDRectMake(0, 0, 36, 36));
     }
+}
 
+static void update_car(LCDSprite *sprite) {
+    Car *car = get_car(sprite);
+
+    // Rotate car if needed
+    //  1 - rotated right
+    // -1 - rotated left
+    //  0 - not rotated
+    int rotation = 0;
+
+    int initial_angle = car->direction;
+    int target_angle = car->target_direction;
+
+    int diff = initial_angle - target_angle;
+    if (diff != 0) {
+        if ((abs(diff) < 180 && diff < 0) || (abs(diff) > 180 && diff > 0)) {
+            car->direction = normalize_angle(initial_angle + 45);
+            rotation = 1;
+        } else {
+            car->direction = normalize_angle(initial_angle - 45);
+            rotation = -1;
+        }
+    }
+
+    // Apply acceleration
     PDButtons current, pushed, released = 0;
     pd->system->getButtonState(&current, &pushed, &released);
 
     if (current == kButtonB) {
-        physics->apply_force_to_movement_vectors(car, car->propulsion_angle, car->propulsion_force);
+        physics->apply_force_to_movement_vectors(car, car->direction, car->propulsion_force);
     }
 
+    // Move car
     float x, y;
     pd->sprite->getPosition(sprite, &x, &y);
-//    logging->log("X: %i", (int) x);
-//    logging->log("Y: %i", (int) y);
 
     float goalX = x, goalY = y;
 
     physics->calculate_new_position(car, &goalX, &goalY);
+
+    switch (initial_angle) {
+        case 90: goalY += 8 * rotation;
+            break;
+        case 270: goalY -= 8 * rotation;
+            break;
+        case 0: goalX += 8 * rotation;
+            break;
+        case 180: goalX -= 8 * rotation;
+            break;
+        default:
+            break;
+    }
 
     float actualX, actualY;
     int len;
@@ -198,6 +218,9 @@ static void update_car(LCDSprite *sprite) {
     if (collisionInfo != NULL) {
         calculate_collision_impact(collisionInfo);
     }
+
+
+
 }
 
 static Car *create_car(double propulsion_force, double mass) {
@@ -216,8 +239,8 @@ static Car *create_car(double propulsion_force, double mass) {
 }
 
 static void add_car(Car *car, float x, float y, int angle) {
-    car->target_propulsion_angle = normalize_angle(angle);
-    car->propulsion_angle = car->target_propulsion_angle;
+    car->target_direction = normalize_angle(angle);
+    car->direction = car->target_direction;
 
     Visual *visual = malloc(sizeof(Visual));
     visual->image_path = carPath;
@@ -253,6 +276,6 @@ struct car_functions *initCarModule(PlaydateAPI *playdate, Logging *loggingPtr) 
     functions->create = create_car;
     functions->get = get_car;
     functions->add = add_car;
-    functions->rotate = rotate_car;
+    functions->direction = set_car_direction;
     return functions;
 }

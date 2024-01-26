@@ -27,7 +27,7 @@ void setPDPtr(PlaydateAPI *p) {
 
 int update(void *userdata) {
     float crankAngle = pd->system->getCrankAngle();
-    objects->car->rotate(playerCar, crankAngle);
+    objects->car->direction(playerCar, crankAngle);
     pd->sprite->updateAndDrawSprites();
 
     return 1;

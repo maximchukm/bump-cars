@@ -13,12 +13,12 @@ typedef struct {
     const struct visual *visual;
     double mass;
     double propulsion_force;
-    int propulsion_angle;
-    int target_propulsion_angle;
+    int direction;
+    int target_direction;
     MovementVector *movement_vectors[8];
 } Car;
 
-enum car_orientation {
+enum CarOrientation {
     kHorizontal,
     kVertical,
     kDiagonal
@@ -28,7 +28,7 @@ struct car_functions {
     Car* (*create)(double propulsion_force, double mass);
     Car* (*get)(LCDSprite *sprite);
     void (*add)(Car *car, float x, float y, int angle);
-    void (*rotate)(Car *car, float angle);
+    void (*direction)(Car *car, float angle);
 };
 
 struct car_functions *initCarModule(PlaydateAPI *playdate, Logging *logging);
