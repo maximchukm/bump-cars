@@ -266,6 +266,11 @@ static void add_car(Car *car, float x, float y, int angle) {
 
 }
 
+static void moveCar(Car *car, float x, float y, int angle) {
+    car->direction = angle;
+    pd->sprite->moveTo(car->visual->sprite, x, y);
+}
+
 struct car_functions *initCarModule(PlaydateAPI *playdate, Logging *loggingPtr) {
     pd = playdate;
     logging = loggingPtr;
@@ -276,6 +281,7 @@ struct car_functions *initCarModule(PlaydateAPI *playdate, Logging *loggingPtr) 
     functions->create = create_car;
     functions->get = get_car;
     functions->add = add_car;
+    functions->move = moveCar;
     functions->direction = set_car_direction;
     return functions;
 }

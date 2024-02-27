@@ -21,6 +21,8 @@ static Objects *objects = NULL;
 
 static Car *playerCar = NULL;
 
+static Car *otherCar = NULL;
+
 void setPDPtr(PlaydateAPI *p) {
     pd = p;
 }
@@ -29,6 +31,13 @@ int update(void *userdata) {
     float crankAngle = pd->system->getCrankAngle();
     objects->car->direction(playerCar, crankAngle);
     pd->sprite->updateAndDrawSprites();
+
+    PDButtons current, pushed, released = 0;
+    pd->system->getButtonState(&current, &pushed, &released);
+
+    if (current == kButtonA) {
+        objects->car->move(otherCar, 250, 150, 270);
+    }
 
     return 1;
 }
@@ -43,7 +52,7 @@ void setupGame(void) {
 //    playerCar = objects->car->create(0.7, 20);
     objects->car->add(playerCar, 100, 100, (int) pd->system->getCrankAngle());
 
-    Car *otherCar = objects->car->create(0, 3);
+    otherCar = objects->car->create(0, 3);
     objects->car->add(otherCar, 250, 150, 270);
 
 }

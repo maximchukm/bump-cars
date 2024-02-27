@@ -28,6 +28,7 @@ struct car_functions {
     Car* (*create)(double propulsion_force, double mass);
     Car* (*get)(LCDSprite *sprite);
     void (*add)(Car *car, float x, float y, int angle);
+    void (*move)(Car *car, float x, float y, int angle);
     void (*direction)(Car *car, float angle);
 };
 
